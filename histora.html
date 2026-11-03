@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nosotros</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Karla:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--noche:#0e1b2c;--arena:#f1e6d2;--sal:#e5483f;--bruma:#9fb0c3;
+  --serif:"Cormorant Garamond",Georgia,serif;--sans:"Karla",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:var(--noche);color:var(--arena);font-family:var(--sans)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--sal);outline-offset:3px}
+
+#escena{position:fixed;inset:0;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#16283f,var(--noche) 75%)}
+.foto{position:absolute;background:#f8f1e4;padding:5px 5px 14px;border-radius:2px;
+  box-shadow:0 8px 24px #0008;will-change:transform}
+.foto img{display:block;width:100%;height:100%;object-fit:cover}
+
+/* Frases al centro */
+#centro{position:fixed;inset:0;z-index:5;display:grid;place-items:center;pointer-events:none;text-align:center;padding:24px}
+#centro::before{content:"";position:absolute;width:min(92vw,760px);height:min(46vh,340px);
+  background:radial-gradient(ellipse,#0e1b2cf2 0,#0e1b2ccc 45%,transparent 72%)}
+#frase{position:relative;font:italic 600 clamp(38px,8vw,92px)/1.08 var(--serif);max-width:12em;
+  text-shadow:0 2px 24px #000a;opacity:0;transform:scale(.96);transition:opacity 1.2s ease,transform 1.2s ease}
+#frase.on{opacity:1;transform:scale(1)}
+
+/* Controles */
+.barra{position:fixed;bottom:14px;z-index:20;display:flex;gap:10px;align-items:center}
+#izq{left:14px}#der{right:14px}
+.chip{background:#0e1b2ccc;backdrop-filter:blur(8px);border:1px solid #ffffff2a;border-radius:999px;padding:9px 18px;font-size:.9rem;transition:background .2s}
+.chip:hover{background:#ffffff22}
+.chip[aria-pressed=true]{background:var(--arena);color:var(--noche)}
+#cancion small{color:var(--bruma);margin-left:6px}
+
+/* Entrada */
+#entrada{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:center;gap:22px;text-align:center;
+  background:var(--noche);padding:24px;transition:opacity .9s,visibility .9s}
+#entrada.fuera{opacity:0;visibility:hidden}
+#entrada h1{font:italic 600 clamp(44px,10vw,96px)/1 var(--serif)}
+#entrada p{color:var(--bruma);max-width:34ch}
+.btn{border:1px solid var(--arena);background:transparent;padding:12px 30px;border-radius:999px;transition:background .2s,color .2s}
+.btn:hover{background:var(--arena);color:var(--noche)}
+.btn.sol{background:var(--sal);border-color:var(--sal);color:#fff}
+.btn.sol:hover{background:#fff;color:var(--sal)}
+#aviso{position:fixed;top:50%;left:50%;transform:translate(-50%,120px);z-index:6;text-align:center;color:var(--bruma);display:none}
+@media (prefers-reduced-motion:reduce){#frase{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- ============ CONFIGURACIÓN: cambia solo esto ============ -->
+<script>
+const CONFIG = {
+  nombres: "Ella & Yo",              // nombres
+  cancion: "salvavidas.m4a",            // ← tu archivo de audio, en la misma carpeta
+  fotos: [
+    "Mi amorcito/00fe6365-7d87-4481-8f7d-6e831130f41e.JPG",
+    "Mi amorcito/012a85ec-7a2d-453d-b286-221ee4744915.JPG",
+    "Mi amorcito/01690116-0ceb-4ec4-81e2-36f5da1abdd1.JPG",
+    "Mi amorcito/023AC5A2-257B-44C3-9148-A7C950CAD88F.JPG",
+    "Mi amorcito/0324b2a9-b896-40e0-a49d-12d6ed5e19ea.JPG",
+    "Mi amorcito/0644ac92-275f-49bb-97f7-7c7ee224e41b.JPG",
+    "Mi amorcito/08339998-f740-417d-8211-4dbc729cd874.JPG",
+    "Mi amorcito/0a84e294-fb19-467f-aa08-6468155c9e82.JPG",
+    "Mi amorcito/0bf4648c-5689-4ea1-8a05-c02fcbaeae52.JPG",
+    "Mi amorcito/0d026c26-8f3c-4bda-8bd0-b0d2440f5d07.JPG",
+    "Mi amorcito/0e77cf44-4bad-4a90-bb4c-2cf93b03e230.JPG",
+    "Mi amorcito/0ed833e9-a90a-46e2-8bf8-dc107696e191.JPG",
+    "Mi amorcito/106d25f4-e9fc-48d9-aa06-cc7e5bcf3faa.JPG",
+    "Mi amorcito/1191c8da-b17e-4de3-93f0-36eb498ed8e9.JPG",
+    "Mi amorcito/147b4037-2a60-4484-a05a-43820e2d65ec.JPG",
+    "Mi amorcito/149a1f13-b001-42c2-b71e-31aadb8ac049.JPG",
+    "Mi amorcito/156d2699-7dc1-40c8-a2ec-0070450c0125.JPG",
+    "Mi amorcito/15e12b8c-a942-42c6-aabf-793d1e27adc4.JPG",
+    "Mi amorcito/17ed6817-f705-4bba-82af-44d6be74b54c.JPG",
+    "Mi amorcito/18e13530-06de-446e-972e-b07859d96229.JPG",
+    "Mi amorcito/1ad7df92-ad2c-41ad-bf03-a7899bc90d46.JPG",
+    "Mi amorcito/1fcf38aa-861b-4d9b-a535-d5da71b78529.JPG",
+    "Mi amorcito/2057ef56-e3ca-4e78-93a6-ed2afe4e4e0c.JPG",
+    "Mi amorcito/205adaa9-268c-4772-8c3f-716cf40603ff.JPG",
+    "Mi amorcito/225d7547-3395-4ca9-9612-f29cb086de67.JPG",
+    "Mi amorcito/22a9e23e-5786-448d-8d31-08d0840635cc.JPG",
+    "Mi amorcito/262ac39d-f933-4139-b687-0eceb51c7adf.JPG",
+    "Mi amorcito/2672b84a-cbc4-443e-bc52-a0379655bb61.JPG",
+    "Mi amorcito/2868b493-2f8a-4f0b-b2aa-66f86d0a8953.JPG",
+    "Mi amorcito/28715d48-6ae7-4d3d-ae69-b0004362427b.JPG",
+    "Mi amorcito/2faad820-c1a7-4e03-9e99-59a126b36b47.JPG",
+    "Mi amorcito/306d5a06-30d7-4f5a-a1e9-ddf24788ed81.JPG",
+    "Mi amorcito/30da0fae-b253-46c9-b9c9-1bfd4dcaca4c.JPG",
+    "Mi amorcito/30f4e715-da1c-4257-ae40-27b9d9cc98f7.JPG",
+    "Mi amorcito/33a66eb5-27fc-43a6-8531-4783051ebe58.JPG",
+    "Mi amorcito/33bcf54e-e7fc-40a1-b63e-c2880fee7725.JPG",
+    "Mi amorcito/353b527e-20fc-4485-98d4-7c95e36bcebd.JPG",
+    "Mi amorcito/355e7884-6d85-4525-8353-03129293ab4f.JPG",
+    "Mi amorcito/361f88a9-f5f5-438d-ae26-c335c5f859c6.JPG",
+    "Mi amorcito/36805928-06b1-4c70-8f9d-8d7a46424df5.JPG",
+    "Mi amorcito/378b3483-e347-4451-8ab3-6ea8dbb2659d.JPG",
+    "Mi amorcito/3837fc5b-9b6e-464d-9292-a114871fbaea.JPG",
+    "Mi amorcito/3bd1ba1f-74a6-490d-a81d-277c404ba0c4.JPG",
+    "Mi amorcito/3c4086e4-ae7a-43c6-ad10-19db551f0637.JPG",
+    "Mi amorcito/417d23ea-bab5-444b-8f1b-df3b1e322f95.JPG",
+    "Mi amorcito/4278649f-d336-49b2-bb93-8afae1dc719e.JPG",
+    "Mi amorcito/42e6420a-ef3c-4110-a0ed-774888a6bee7.JPG",
+    "Mi amorcito/448193b6-8b1e-4531-8898-3ff3281677c9.JPG",
+    "Mi amorcito/44c80d01-d52b-4188-9b65-83f0480d649c.JPG",
+    "Mi amorcito/45230cf9-7010-4184-bb11-4bc352edd26e.JPG",
+    "Mi amorcito/463bd28b-b7fc-4e18-9dab-b20071d0024d.JPG",
+    "Mi amorcito/46d638b8-0729-4b14-aafd-d761c275923c.JPG",
+    "Mi amorcito/4750de4c-86b5-4cfd-917a-d35d93b6cb03.JPG",
+    "Mi amorcito/47691dca-39cf-4461-92b2-60edd4f50b78.JPG",
+    "Mi amorcito/477dbf2d-09a0-443f-a793-afad2810c4e1.JPG",
+    "Mi amorcito/4789c9f2-e63d-4eca-aa19-18034d25fe6c.JPG",
+    "Mi amorcito/4984c97b-d18c-434b-bdb9-14c479db0c64.JPG",
+    "Mi amorcito/49a2f335-3a06-42af-a417-5d46a6ca69ca.JPG",
+    "Mi amorcito/4cac2865-f10b-4049-b1e2-5134213d4568.JPG",
+    "Mi amorcito/4ce8d7b6-2a99-4546-8cc6-e6f2957764ac.JPG",
+    "Mi amorcito/4db6d899-9ae2-457e-814a-62e6e7489ea0.JPG",
+    "Mi amorcito/4ea8421d-6684-4fd9-a2d8-1245040a99f0.JPG",
+    "Mi amorcito/4f1eae2d-3a03-4437-9512-ad7d96a7cbe0.JPG",
+    "Mi amorcito/4f3f312f-d65c-4661-b56f-461257e1ef2c.JPG",
+    "Mi amorcito/4fa681be-30fd-4ff4-9117-10c2d5c01fca.JPG",
+    "Mi amorcito/515f6ff8-9443-4b7d-984c-26de4afc419d.JPG",
+    "Mi amorcito/52011c2d-b829-4a0f-8d22-7dc074ae9059.JPG",
+    "Mi amorcito/5392de1e-ecdb-4042-990d-e1b0c07e3121.JPG",
+    "Mi amorcito/53e6b9ca-3090-462e-9462-91ef4a827294.JPG",
+    "Mi amorcito/54465412-83e0-4312-a373-65012d23871c.JPG",
+    "Mi amorcito/545A25A7-D4B5-418B-B4FF-F15700C08F12.JPG",
+    "Mi amorcito/556e84e2-d4ac-499d-8199-c9be0760c31a.JPG",
+    "Mi amorcito/557b72da-afc7-4ff3-ba4c-1e060fa0dd71.JPG",
+    "Mi amorcito/584e0545-ca1b-4143-a45a-3f09d2cef83d.JPG",
+    "Mi amorcito/58865449-541c-45c2-86fb-046a45edfffa.JPG",
+    "Mi amorcito/5A723E58-9719-4DC9-BCDD-176588779952.JPG",
+    "Mi amorcito/5bf07180-ffda-46df-805c-8e679889d936.JPG",
+    "Mi amorcito/5e1b418d-bc6e-40f7-a966-09da2c1ebfd2.JPG",
+    "Mi amorcito/5e270aa5-a541-4c2a-9ad0-8146623f1b57.JPG",
+    "Mi amorcito/5f04469e-08c1-45f2-a1a4-c1caef7e1132.JPG",
+    "Mi amorcito/5f0eb93b-2165-4480-a970-3ef57f29bc8f.JPG",
+    "Mi amorcito/605d9d6c-c71f-4c68-aa2e-e3357b45b698.JPG",
+    "Mi amorcito/63cb9516-0c16-42d8-89b5-d94cc9ec0a99.JPG",
+    "Mi amorcito/64c61ff8-6d66-44d0-a8e8-d88ffee8a6ed.JPG",
+    "Mi amorcito/6803b5a2-34da-4497-9b40-3a3486d03c13.JPG",
+    "Mi amorcito/6a5a53b5-ad2d-434c-829d-dfa227b32bdf.JPG",
+    "Mi amorcito/6B74637F-24BB-4854-880F-55C696CCCB32.JPG",
+    "Mi amorcito/6bd16dfb-a329-4ed9-a90f-37d998242294.JPG",
+    "Mi amorcito/6e246127-d48c-4c31-b976-7332fe32f083.JPG",
+    "Mi amorcito/6f68ca72-8058-4442-86fe-d9c039fa9c40.JPG",
+    "Mi amorcito/6f782919-c1b5-4489-8e67-5870cbffeeb5.JPG",
+    "Mi amorcito/6fca1554-ce21-4458-911e-4b024bc36c3d.JPG",
+    "Mi amorcito/7056d061-24f3-4f13-bd2d-1d24cbf439f1.JPG",
+    "Mi amorcito/72d1ba0f-0be0-4dec-8535-61b9f0e71af0.JPG",
+    "Mi amorcito/733249bf-3e72-4d2f-92b1-50ea7789fc7a.JPG",
+    "Mi amorcito/745f88e2-ee8d-4fc6-8493-200628dd0a78.JPG",
+    "Mi amorcito/75cdf6e1-8e37-4b83-bae7-f1736c69900a.JPG",
+    "Mi amorcito/76340927-6635-492d-bfe6-2d8b48b82c56.JPG",
+    "Mi amorcito/7761078c-22ab-4801-8a6a-6cfb23708b59.JPG",
+    "Mi amorcito/77ff83bd-c4f7-42d6-abea-74e37bd8f460.JPG",
+    "Mi amorcito/790061cc-72a0-40fc-ac8f-7081378275c4.JPG",
+    "Mi amorcito/7a456e91-6f81-4ebb-94d6-bdb98ce1fa21.JPG",
+    "Mi amorcito/7a8c739c-3011-4bf0-be02-a92540f2aa76.JPG",
+    "Mi amorcito/7d3650f8-d415-42c2-a75a-b64dc237b18e.JPG",
+    "Mi amorcito/7d613014-e21a-4614-9993-dae5792ef3c1.JPG",
+    "Mi amorcito/7d7a4db9-1c5f-41da-9f67-768e0947251d.JPG",
+    "Mi amorcito/7eaa007e-2aea-41d6-97b6-e006960c164a.JPG",
+    "Mi amorcito/7fb6b070-9ecb-44aa-a116-4699d65464a8.JPG",
+    "Mi amorcito/81ad7b68-e136-4277-a5d6-29d856cf71b5.JPG",
+    "Mi amorcito/82eb78ba-d233-4da7-b97e-0d07b166c4ac.JPG",
+    "Mi amorcito/834d1854-e7ba-49ad-880c-eef489ff7f60.JPG",
+    "Mi amorcito/83955e4f-f457-44ac-b108-d04e3ecaaf6a.JPG",
+    "Mi amorcito/847c82ad-4791-45bb-b39e-677d9872a519.JPG",
+    "Mi amorcito/86ce5ffb-23e5-400c-aec5-d3de4561f06f.JPG",
+    "Mi amorcito/872e5f5a-a5ed-4423-93ea-a4fc74947358.JPG",
+    "Mi amorcito/8879e6d0-63d4-48ec-a68f-1f813f292633.JPG",
+    "Mi amorcito/88b70f45-9823-4672-8c36-c8e9e25e9ef0.JPG",
+    "Mi amorcito/8a18c4f0-a1bf-4699-9eae-4c21dc556e0a.JPG",
+    "Mi amorcito/8a810850-4317-451d-bb61-baa9e1a5142a.JPG",
+    "Mi amorcito/8b162949-db9f-4ef1-ba95-33618b8cd9c1.JPG",
+    "Mi amorcito/8c8f28ec-c9bd-41d6-9cdc-5c568ebb8eb1.JPG",
+    "Mi amorcito/8cc5a0e5-6360-42d4-8c2c-f2663c3fc554.JPG",
+    "Mi amorcito/8fd5fbd0-871c-4b55-9a69-66159864d31a.JPG",
+    "Mi amorcito/9032887b-6c99-4d60-81ce-7f2219c0bc97.JPG",
+    "Mi amorcito/917ef8b9-acec-448c-a50d-3f92139fc3ac.JPG",
+    "Mi amorcito/926e9a63-fc8b-47e9-bb59-aa185256b5e5.JPG",
+    "Mi amorcito/9a4bb8ab-781b-467b-8f83-887c79461df3.JPG",
+    "Mi amorcito/9a4f1729-0240-4405-80e0-21c428599455.JPG",
+    "Mi amorcito/9be1b232-1b3c-4009-b663-753601947d45.JPG",
+    "Mi amorcito/9C28525B-6516-4BDE-96E7-0AA258B5732F.JPG",
+    "Mi amorcito/9dfbb1f8-2c4c-4b56-ae86-6a78dabe0c77.JPG",
+    "Mi amorcito/9ecda8e8-5319-4dac-87dd-8e04bfe6d697.JPG",
+    "Mi amorcito/9f517a1c-c7ed-4e54-8ef6-33e41f8e96d7.JPG",
+    "Mi amorcito/a09ac8b9-0990-4883-be68-93ec8076d03e.JPG",
+    "Mi amorcito/a1a09ae4-df6a-4532-bf3c-fe8d81bea0e9.JPG",
+    "Mi amorcito/a1e6b13f-48a3-4ba7-8400-25e6184fbdd4.JPG",
+    "Mi amorcito/a30b7361-602f-45f9-afbf-85797fec0e45.JPG",
+    "Mi amorcito/a392b741-7148-425f-bae1-e6ccdcf6fef3.JPG",
+    "Mi amorcito/a588a6bc-942c-4d0b-a7db-8202f674647d.JPG",
+    "Mi amorcito/a60946a8-3d29-48d5-9978-295815870c38.JPG",
+    "Mi amorcito/a809c4bd-9027-4caf-9b33-87017597c581.JPG",
+    "Mi amorcito/A8B5F182-F667-4DDD-9BB7-C960BFB8CA1A.JPG",
+    "Mi amorcito/ae73dfaf-d9c3-48f2-b79e-21a8b465e9b9.JPG",
+    "Mi amorcito/af10c111-36a3-423b-8f33-958d931b8ce1.JPG",
+    "Mi amorcito/afa0bf27-8409-4650-90c6-5c565caee18a.JPG",
+    "Mi amorcito/b0c22248-bfde-47c9-b346-0f51aef99a65.JPG",
+    "Mi amorcito/b1b77144-fa58-49d7-ac9a-c360c8125edf.JPG",
+    "Mi amorcito/b38ebddd-31a8-49e9-9d8b-3f3f794b6151.JPG",
+    "Mi amorcito/b3a7b25a-74af-4903-95f8-db4c67421fef.JPG",
+    "Mi amorcito/b3bec637-e76c-447c-8be1-d78542c8215b.JPG",
+    "Mi amorcito/b3bedca1-a640-4bc9-b4ff-af8887f5fafd.JPG",
+    "Mi amorcito/b3f3ffdd-b163-4379-b837-c948abafd43f.JPG",
+    "Mi amorcito/b8a0903f-6bd6-4c6e-8f95-1806e5625b2e.JPG",
+    "Mi amorcito/bcbd9429-1e91-47ab-8a81-7dbb59939b50.JPG",
+    "Mi amorcito/bce05b7b-a590-412e-ada3-3e1b8da1444c.JPG",
+    "Mi amorcito/bd0f94af-5db1-420a-8cbe-fdbbfa05fcc9.JPG",
+    "Mi amorcito/bd485a1d-9ff2-445e-8469-a6cc1459eb21.JPG",
+    "Mi amorcito/be6a8ce9-e4c2-4965-a369-656b232321c5.JPG",
+    "Mi amorcito/bfce3536-0b66-491d-a4cf-bc52a95d2718.JPG",
+    "Mi amorcito/c225a63a-124f-4e20-b84e-bd8862f5399c.JPG",
+    "Mi amorcito/c612917a-ac16-4603-b093-b85156ed90ae.JPG",
+    "Mi amorcito/c6495608-aace-47af-95ad-d8e11a950d04.JPG",
+    "Mi amorcito/C67BBE4D-240D-4100-B861-07D359DF292B.JPG",
+    "Mi amorcito/caf2c469-2dae-4ce3-9939-07f375906161.JPG",
+    "Mi amorcito/CBC46841-1795-4C97-9931-541D1D9398CA.JPG",
+    "Mi amorcito/cc1dde2d-97c6-4393-bd29-f2602d66f54a.JPG",
+    "Mi amorcito/ccf71c56-14b1-4e31-bb26-ae4b593b6ecd.JPG",
+    "Mi amorcito/cdf5e7b7-69cc-4cf4-981c-8170992d4dd4.JPG",
+    "Mi amorcito/d049e196-ea3d-479d-bc9f-fc871ac5f6c5.JPG",
+    "Mi amorcito/d09695ca-09e5-493c-9c01-24a80f820fa3.JPG",
+    "Mi amorcito/d25adfc2-b6ec-48f2-b1e4-a6d3bfa52f43.JPG",
+    "Mi amorcito/d2f4b4cc-5dfa-47b8-b9ea-735f850d3e49.JPG",
+    "Mi amorcito/d39f7e6e-dc02-4cbd-bc52-f68ad90b3388.JPG",
+    "Mi amorcito/d4fa6121-5e37-4705-a9ce-e5516b6b3fea.JPG",
+    "Mi amorcito/d5f0f939-7fa3-440a-a092-dd7070d1f9a3.JPG",
+    "Mi amorcito/d5fbedbb-b471-47d0-a3d4-e94946ddd29a.JPG",
+    "Mi amorcito/d911067d-6e9a-4e9f-96b4-65f01d10e307.JPG",
+    "Mi amorcito/d94d84dd-7792-4eab-b1c0-eaa20200dfb5.JPG",
+    "Mi amorcito/d969b91d-0327-4efb-9f8f-921537b9f52f.JPG",
+    "Mi amorcito/dcb44132-38c9-49a6-ad40-95dec4a5e5de.JPG",
+    "Mi amorcito/dd6e7464-8491-4809-bf51-42aabb96d727.JPG",
+    "Mi amorcito/de2ba21e-d72f-4bd3-aa2f-f58af875db00.JPG",
+    "Mi amorcito/e106cd11-f803-449e-be9c-9126979b9e8c.JPG",
+    "Mi amorcito/e41892e0-09b4-40c8-b780-b33c3ccd6fe2.JPG",
+    "Mi amorcito/e555bf2e-011d-40a8-855b-0a78b75d01d2.JPG",
+    "Mi amorcito/e570ae07-3b6e-40b3-86d0-95fcc347df59.JPG",
+    "Mi amorcito/e6ace0cd-ab86-4a3f-90a2-4e80830e3795.JPG",
+    "Mi amorcito/e87eb7ff-a7ab-4eb8-8750-47e743003c6b.JPG",
+    "Mi amorcito/ea1adbde-bea7-435d-8e06-a42cf77749b3.JPG",
+    "Mi amorcito/eb5a5146-f246-450f-bf95-00d740b8c808.JPG",
+    "Mi amorcito/ebd9c335-2214-42d8-9972-29c52e4492c0.JPG",
+    "Mi amorcito/ecd7624e-9b7c-48bd-9d83-02736367451a.JPG",
+    "Mi amorcito/ee466838-cdbb-45c8-b45a-6a68d4d88129.JPG",
+    "Mi amorcito/eeea00ef-4061-43f5-b390-ced99e8d18f9.JPG",
+    "Mi amorcito/f0674dad-62cb-41e8-abe7-18f8343b7c7b.JPG",
+    "Mi amorcito/f1fef2ec-d09b-472e-af9b-d1f5b8bb9aa1.JPG",
+    "Mi amorcito/f2278a02-03b1-4ca9-ada0-037a4e727ec5.JPG",
+    "Mi amorcito/f3289d23-c52c-4788-b00b-e5bb0b1ccdcb.JPG",
+    "Mi amorcito/f3d49bed-0c98-4917-927a-baf876a33f1e.JPG",
+    "Mi amorcito/f59543b4-c8f1-4153-abf1-e25cc904c39f.JPG",
+    "Mi amorcito/f5ce8099-7f89-4ee5-8999-8414da137610.JPG",
+    "Mi amorcito/F9CF5803-D65F-441D-A6DC-FD446A810DA1.JPG",
+    "Mi amorcito/fc0e9c12-f862-4cfb-ac05-d31bafbf57c3.JPG",
+    "Mi amorcito/ff0db318-9b99-46ac-ae61-ecb6d386a72b.JPG",
+    "Mi amorcito/ff898e58-e0fa-4a9a-aa1b-f88684dc555a.JPG",
+    "Mi amorcito/IMG_2047.JPG",
+    "Mi amorcito/IMG_1749.PNG",
+    "Mi amorcito/IMG_2089.PNG",
+    "Mi amorcito/IMG_2090.PNG",
+    "Mi amorcito/IMG_2091.PNG",
+    "Mi amorcito/IMG_2092.PNG",
+    "Mi amorcito/IMG_2282.PNG",
+    "Mi amorcito/IMG_2283.PNG",
+    "Mi amorcito/IMG_2284.PNG",
+    "Mi amorcito/IMG_2285.PNG",
+    "Mi amorcito/IMG_2286.PNG",
+    "Mi amorcito/IMG_2287.PNG",
+    "Mi amorcito/IMG_2288.PNG",
+    "Mi amorcito/IMG_2289.PNG",
+    "Mi amorcito/IMG_2290.PNG",
+    "Mi amorcito/IMG_2291.PNG",
+    "Mi amorcito/IMG_2292.PNG",
+    "Mi amorcito/IMG_2293.PNG",
+    "Mi amorcito/IMG_2294.PNG",
+    "Mi amorcito/IMG_2465.PNG",
+    "Mi amorcito/IMG_2466.PNG",
+    "Mi amorcito/IMG_2467.PNG",
+    "Mi amorcito/IMG_2470.PNG",
+    "Mi amorcito/IMG_2471.PNG",
+    "Mi amorcito/IMG_3196.PNG",
+    "Mi amorcito/IMG_3197.PNG",
+    "Mi amorcito/IMG_3198.PNG",
+    "Mi amorcito/IMG_3199.PNG",
+    "Mi amorcito/IMG_3200.PNG",
+    "Mi amorcito/IMG_3201.PNG",
+    "Mi amorcito/IMG_3202.PNG",
+    "Mi amorcito/IMG_3203.PNG",
+    "Mi amorcito/IMG_3229.PNG",
+    "Mi amorcito/IMG_3236.PNG",
+    "Mi amorcito/IMG_3572.PNG",
+    "Mi amorcito/IMG_3573.PNG",
+    "Mi amorcito/IMG_3576.PNG",
+    "Mi amorcito/IMG_3577.PNG",
+  ],
+  frases: [
+    "Te amo",
+    "Eres mi salvavidas",
+    "Contigo, todo",
+    "Mi lugar favorito eres tú",
+    "Gracias por quedarte",
+    "Mi persona favorita",
+    "Contigo el mundo es mejor",
+    "Siempre tú",
+    "Mi hogar",
+    "Elegiría tus abrazos mil veces",
+  ]
+};
+</script>
+
+<div id="escena"></div>
+<div id="centro"><div id="frase"></div></div>
+<p id="aviso">Aún no hay fotos. Toca “Elegir fotos” abajo.</p>
+
+<div class="barra" id="izq">
+  <button class="chip" id="m-lluvia" aria-pressed="true">Lluvia</button>
+  <button class="chip" id="m-collage" aria-pressed="false">Collage</button>
+  <button class="chip" id="btn-fotos">Elegir fotos</button>
+</div>
+<div class="barra" id="der">
+  <button class="chip" id="cancion" aria-label="Pausar o reproducir">♪ Salvavidas<small>Aerophon · Juan Pablo Vega</small></button>
+</div>
+
+<section id="entrada">
+  <h1 id="t-nombres"></h1>
+  <p>Con volumen, por favor. Esta es para ti.</p>
+  <button class="btn sol" id="entrar">Entrar</button>
+</section>
+
+<input type="file" id="in-fotos" accept="image/*" multiple hidden>
+<input type="file" id="in-audio" accept="audio/*" hidden>
+
+<script>
+const $ = id => document.getElementById(id);
+const escena = $("escena");
+let fotos = [...CONFIG.fotos];
+let modo = matchMedia("(prefers-reduced-motion:reduce)").matches ? "collage" : "lluvia";
+let timers = [];
+const movil = () => innerWidth < 640;
+
+$("t-nombres").textContent = CONFIG.nombres;
+document.title = CONFIG.nombres;
+
+/* ---------- utilidades ---------- */
+const rnd = (a,b) => a + Math.random()*(b-a);
+function mezclar(a){ a = [...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+let cola = [];
+const siguiente = () => { if(!cola.length) cola = mezclar(fotos); return cola.pop(); };
+function crearFoto(src, w){
+  const f = document.createElement("div");
+  f.className = "foto";
+  f.style.width = w + "px"; f.style.height = (w*1.2) + "px";
+  const im = document.createElement("img"); im.src = src; im.alt = "";
+  f.appendChild(im); return f;
+}
+function limpiar(){
+  timers.forEach(t => { clearInterval(t); clearTimeout(t); });
+  timers = []; escena.innerHTML = "";
+}
+
+/* ---------- LLUVIA ---------- */
+function lluvia(){
+  const caer = () => {
+    const w = movil() ? rnd(80,130) : rnd(120,210);
+    const f = crearFoto(siguiente(), w);
+    f.style.left = rnd(-2, 94) + "vw";
+    f.style.top = "0px";
+    escena.appendChild(f);
+    const r = rnd(-14,14), dx = rnd(-60,60);
+    const dur = rnd(9000,16000) * (w < 140 ? 1.15 : 0.9);
+    f.animate([
+      {transform:`translate(0,-${w*1.4}px) rotate(${r}deg)`},
+      {transform:`translate(${dx}px,${innerHeight + 60}px) rotate(${r + rnd(-10,10)}deg)`}
+    ],{duration:dur,easing:"linear"}).onfinish = () => f.remove();
+  };
+  for(let i=0;i<7;i++){ const t=setTimeout(caer, i*350); timers.push(t); }
+  timers.push(setInterval(caer, movil() ? 1000 : 700));
+}
+
+/* ---------- COLLAGE ---------- */
+function collage(){
+  const W = innerWidth, H = innerHeight;
+  const minLado = movil() ? 80 : 110;
+  const lado = Math.max(minLado, Math.sqrt(W*H / Math.min(fotos.length, 40)) * 0.92);
+  const cols = Math.max(2, Math.floor(W/lado)), rows = Math.max(2, Math.floor(H/(lado*1.15)));
+  const cw = W/cols, ch = H/rows, ancho = cw*1.1;
+  const celdas = [];
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const cx = (c+.5)/cols - .5, cy = (r+.5)/rows - .5;
+    if((cx*cx)/.045 + (cy*cy)/.03 < 1) continue; // deja libre el centro para las frases
+    celdas.push({c,r});
+  }
+  mezclar(celdas).slice(0, fotos.length).forEach((cel,i) => {
+    const f = crearFoto(siguiente(), ancho);
+    f.style.left = (cel.c*cw + rnd(-8,8) - ancho*.05) + "px";
+    f.style.top  = (cel.r*ch + rnd(-8,8)) + "px";
+    f.style.transform = `rotate(${rnd(-9,9)}deg) scale(0)`;
+    f.style.transition = "transform .7s cubic-bezier(.2,1.4,.4,1)";
+    f.dataset.rot = f.style.transform.match(/rotate\(([^)]+)\)/)[1];
+    escena.appendChild(f);
+    timers.push(setTimeout(() => f.style.transform = `rotate(${f.dataset.rot}) scale(1)`, 120 + i*110));
+  });
+  // Cambia fotos poco a poco para que salgan todas
+  if(fotos.length > celdas.length){
+    timers.push(setInterval(() => {
+      const els = escena.querySelectorAll(".foto img"); if(!els.length) return;
+      els[Math.floor(Math.random()*els.length)].src = siguiente();
+    }, 2500));
+  }
+}
+
+function iniciar(){
+  limpiar();
+  $("aviso").style.display = fotos.length ? "none" : "block";
+  if(!fotos.length) return;
+  cola = mezclar(fotos);
+  modo === "lluvia" ? lluvia() : collage();
+}
+
+/* ---------- Frases ---------- */
+let k = 0;
+function frase(){
+  const el = $("frase");
+  el.classList.remove("on");
+  setTimeout(() => {
+    el.textContent = CONFIG.frases[k++ % CONFIG.frases.length];
+    el.classList.add("on");
+  }, 1200);
+}
+frase(); setInterval(frase, 5200);
+
+/* ---------- Controles ---------- */
+function setModo(m){
+  modo = m;
+  $("m-lluvia").setAttribute("aria-pressed", m==="lluvia");
+  $("m-collage").setAttribute("aria-pressed", m==="collage");
+  iniciar();
+}
+$("m-lluvia").onclick = () => setModo("lluvia");
+$("m-collage").onclick = () => setModo("collage");
+$("m-lluvia").setAttribute("aria-pressed", modo==="lluvia");
+$("m-collage").setAttribute("aria-pressed", modo==="collage");
+$("btn-fotos").onclick = () => $("in-fotos").click();
+$("in-fotos").onchange = e => {
+  fotos = fotos.concat([...e.target.files].map(f => URL.createObjectURL(f)));
+  iniciar();
+};
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(iniciar, 400); });
+
+/* ---------- Música ---------- */
+const audio = new Audio(CONFIG.cancion);
+audio.loop = true; audio.volume = 0.7;
+function sonar(){
+  audio.play().catch(() => {
+    if(confirm("No encontré la canción. ¿Quieres elegir el archivo de Salvavidas desde tu dispositivo?")) $("in-audio").click();
+  });
+}
+$("in-audio").onchange = e => { if(e.target.files[0]){ audio.src = URL.createObjectURL(e.target.files[0]); audio.play(); } };
+$("cancion").onclick = () => audio.paused ? sonar() : audio.pause();
+$("entrar").onclick = () => { $("entrada").classList.add("fuera"); sonar(); };
+
+iniciar();
+</script>
+</body>
+</html>
